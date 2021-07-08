@@ -34,6 +34,13 @@ import uk.ac.babraham.FastQC.Utilities.QualityCount;
 public class PerBaseQualityScores extends AbstractQCModule {
 
 	public QualityCount [] qualityCounts = new QualityCount[0];
+	long max_num_seq = 1;
+	long min_num_seq = 0;
+	double lowest_q_val = 10;
+	double highest_q_val = 90;
+	double [] numbps = null;
+	double [] mins = null;
+	double [] maxs = null;
 	double [] means = null;
 	double [] medians = null;
 	double [] lowerQuartile = null;
@@ -50,7 +57,9 @@ public class PerBaseQualityScores extends AbstractQCModule {
 		
 		if (!calculated) getPercentages();
 
-		return new QualityBoxPlot(means,medians,lowest,highest,lowerQuartile,upperQuartile, low, high, 2d, xLabels, "Quality scores across all bases ("+encodingScheme+" encoding)");
+		return new QualityBoxPlot(encodingScheme.offset(), numbps, mins, maxs, means, medians, lowest, highest, lowerQuartile, upperQuartile, 
+		low, high, 2d, xLabels, 
+		"Quality scores across all bases ("+encodingScheme+" encoding) - #seq max: " + max_num_seq + " #seq min: " + min_num_seq);
 	}
 	
 	public boolean ignoreFilteredSequences() {
@@ -70,13 +79,15 @@ public class PerBaseQualityScores extends AbstractQCModule {
 		char [] range = calculateOffsets();
 		encodingScheme = PhredEncoding.getFastQEncodingOffset(range[0]);
 		low = 0;
-		high = range[1] - encodingScheme.offset();
+		high = range[1] - encodingScheme.offset() + 1;
 		if (high < 35) {
 			high = 35;
 		}
 		
 		BaseGroup [] groups = BaseGroup.makeBaseGroups(qualityCounts.length);
-		
+		numbps = new double[groups.length];
+		mins = new double[groups.length];
+		maxs = new double[groups.length];
 		means = new double[groups.length];
 		medians = new double[groups.length];
 		lowest = new double[groups.length];
@@ -85,12 +96,20 @@ public class PerBaseQualityScores extends AbstractQCModule {
 		upperQuartile = new double[groups.length];
 		xLabels = new String[groups.length];
 		
+		if (qualityCounts[0].getTotalCount() > 0){
+			max_num_seq = qualityCounts[0].getTotalCount();
+		}
+		min_num_seq = qualityCounts[qualityCounts.length-1].getTotalCount();
+
 		for (int i=0;i<groups.length;i++) {
 			xLabels[i] = groups[i].toString();
 			int minBase = groups[i].lowerCount();
 			int maxBase = groups[i].upperCount();
-			lowest[i] = getPercentile(minBase, maxBase, encodingScheme.offset(), 10);
-			highest[i] = getPercentile(minBase, maxBase, encodingScheme.offset(), 90);
+			numbps[i] = getMeanNumbps(minBase, maxBase);
+			mins[i] = getMin(minBase, maxBase, encodingScheme.offset());
+			maxs[i] = getMax(minBase, maxBase, encodingScheme.offset());
+			lowest[i] = getPercentile(minBase, maxBase, encodingScheme.offset(), lowest_q_val);
+			highest[i] = getPercentile(minBase, maxBase, encodingScheme.offset(), highest_q_val);
 			means[i] = getMean(minBase,maxBase,encodingScheme.offset());
 			medians[i] = getPercentile(minBase, maxBase, encodingScheme.offset(), 50);
 			lowerQuartile[i] = getPercentile(minBase, maxBase, encodingScheme.offset(), 25);
@@ -224,8 +243,34 @@ public class PerBaseQualityScores extends AbstractQCModule {
 			sb.append("\n");
 		}
 	}
-	
-	private double getPercentile (int minbp, int maxbp, int offset, int percentile) {
+
+	private double getMin (int minbp, int maxbp, int offset) {
+		double min_group = qualityCounts[minbp-1].getMinChar()-offset;
+		
+		for (int i=minbp;i<maxbp;i++) {
+			double mn = qualityCounts[minbp-1].getMinChar()-offset;
+			if (mn < min_group) {
+				min_group = mn;
+			}
+		}
+		
+		return min_group;
+	}
+
+	private double getMax (int minbp, int maxbp, int offset) {
+		double max_group = qualityCounts[minbp-1].getMaxChar()-offset;
+		
+		for (int i=minbp;i<maxbp;i++) {
+			double mx = qualityCounts[minbp-1].getMaxChar()-offset;
+			if (mx > max_group) {
+				max_group = mx;
+			}
+		}
+		
+		return max_group;
+	}
+
+	private double getPercentile (int minbp, int maxbp, int offset, double percentile) {
 		int count = 0;
 		double total = 0;
 	
@@ -242,6 +287,22 @@ public class PerBaseQualityScores extends AbstractQCModule {
 		return Double.NaN;
 		
 	}
+
+
+	private double getMeanNumbps (int minbp, int maxbp) {
+		int count = maxbp - minbp + 1;
+		double total = 0;
+
+		for (int i=minbp-1;i<maxbp;i++) {
+			total += qualityCounts[i].getTotalCount()*10.0/max_num_seq;
+		}
+		
+		if (count > 0) {
+			return total/count;
+		}
+		return Double.NaN;
+	}
+
 
 	private double getMean (int minbp, int maxbp, int offset) {
 		int count = 0;

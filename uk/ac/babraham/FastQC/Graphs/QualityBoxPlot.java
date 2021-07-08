@@ -26,6 +26,10 @@ import javax.swing.JPanel;
 
 public class QualityBoxPlot extends JPanel {
 
+	private int offset;
+	private double [] numbps;
+	private double [] mins;
+	private double [] maxs;
 	private double [] means;
 	private double [] medians;
 	private double [] lowest;
@@ -46,8 +50,20 @@ public class QualityBoxPlot extends JPanel {
 	private static final Color BAD_DARK = new Color(230,215,175);
 	private static final Color UGLY_DARK = new Color(230,175,175);
 		
-	public QualityBoxPlot (double [] means, double [] medians, double [] lowest, double [] highest, double [] lowerQuartile, double [] upperQuartile, double minY, double maxY, double yInterval, String [] xLabels, String graphTitle) {
+	public QualityBoxPlot (
+		int offset,
+		double [] numbps,
+		double [] mins, double [] maxs, 
+		double [] means, double [] medians, 
+		double [] lowest, double [] highest, 
+		double [] lowerQuartile, double [] upperQuartile, 
+		double minY, double maxY, double yInterval, String [] xLabels, String graphTitle) {
 
+		this.offset = offset;
+		this.numbps = numbps;
+		this.mins = mins;
+		this.maxs = maxs;
+		this.means = means;
 		this.means = means;
 		this.medians = medians;
 		this.lowest = lowest;
@@ -80,39 +96,60 @@ public class QualityBoxPlot extends JPanel {
 			yStart = yInterval * (((int)minY/yInterval)+1);
 		}
 		
-		int xOffset = 0;
+		int xLeftOffset = 0;
+		int xRightOffset = 0;
 		
+		// Draw the left y axis labels
 		for (double i=yStart;i<=maxY;i+=yInterval) {
 			String label = ""+i;
 			label = label.replaceAll(".0$", "");
+			label = label + " -> " + (char)(i+offset);
 			int width = g.getFontMetrics().stringWidth(label);
-			if (width > xOffset) {
-				xOffset = width;
+			if (width > xLeftOffset) {
+				xLeftOffset = width;
 			}
 			
 			g.drawString(label, 2, getY(i)+(g.getFontMetrics().getAscent()/2));
 		}
 
-		// Give the x axis a bit of breathing space
-		xOffset += 5;
-		
 
+		// Draw the right y axis labels
+		for (double i=0;i<=10;i+=yInterval) {
+			String label = ""+i*10+"%";
+			label = label.replaceAll(".0$", "");
+			int width = g.getFontMetrics().stringWidth(label);
+			if (width > xRightOffset) {
+				xRightOffset = width;
+			}
+			
+			g.drawString(label, getWidth() - width -2, getY(i)+(g.getFontMetrics().getAscent()/2));
+		}
+		
+		// Give the x axis a bit of breathing space
+		xLeftOffset += 5;
 	
 		g.setColor(Color.BLACK);
 		
 		
 		// Draw the graph title
 		int titleWidth = g.getFontMetrics().stringWidth(graphTitle);
-		g.drawString(graphTitle, (xOffset + ((getWidth()-(xOffset+10))/2)) - (titleWidth/2), 30);
-		
-		
+		if (titleWidth <= getWidth()-xRightOffset -xLeftOffset){
+			g.drawString(graphTitle, xLeftOffset + (getWidth()-xRightOffset -xLeftOffset - titleWidth)/2, 25);
+		} else {
+
+			String [] titles = graphTitle.split("-");
+			int titlePartWidth = g.getFontMetrics().stringWidth(titles[0]);
+			g.drawString(titles[0], xLeftOffset + (getWidth()-xRightOffset -xLeftOffset - titlePartWidth)/2, 15);
+			titlePartWidth = g.getFontMetrics().stringWidth(titles[1]);
+			g.drawString(titles[1], xLeftOffset + (getWidth()-xRightOffset -xLeftOffset - titlePartWidth)/2, 30);
+		}
 		
 		// Work out the width of the x axis bins
-		int baseWidth = (getWidth()-(xOffset+10))/means.length;
+		int baseWidth = (getWidth()-(xLeftOffset+xRightOffset))/means.length;
 		if (baseWidth<1) baseWidth = 1;
-				
-		// First draw faint boxes over alternating bases so you can see which is which
+
 		
+		// First draw faint boxes over alternating bases so you can see which is which
 		int lastXLabelEnd = 0;
 		
 		for (int i=0;i<means.length;i++) {		// Now draw some background colours which show good / bad quality
@@ -123,7 +160,7 @@ public class QualityBoxPlot extends JPanel {
 				g.setColor(UGLY_DARK);
 			}
 
-			g.fillRect(xOffset+(baseWidth*i), getY(20), baseWidth, getY(yStart)-getY(20));
+			g.fillRect(xLeftOffset+(baseWidth*i), getY(20), baseWidth, getY(yStart)-getY(20));
 
 			if (i%2 != 0) {
 				g.setColor(BAD);
@@ -132,7 +169,7 @@ public class QualityBoxPlot extends JPanel {
 				g.setColor(BAD_DARK);
 			}
 
-			g.fillRect(xOffset+(baseWidth*i), getY(28), baseWidth, getY(20)-getY(28));
+			g.fillRect(xLeftOffset+(baseWidth*i), getY(28), baseWidth, getY(20)-getY(28));
 
 			if (i%2 != 0) {
 				g.setColor(GOOD);
@@ -141,11 +178,11 @@ public class QualityBoxPlot extends JPanel {
 				g.setColor(GOOD_DARK);
 			}
 
-			g.fillRect(xOffset+(baseWidth*i), getY(maxY), baseWidth, getY(28)-getY(maxY));
+			g.fillRect(xLeftOffset+(baseWidth*i), getY(maxY), baseWidth, getY(28)-getY(maxY));
 
 			g.setColor(Color.BLACK);
 			int baseNumberWidth = g.getFontMetrics().stringWidth(xLabels[i]);
-			int labelStart = ((baseWidth/2)+xOffset+(baseWidth*i))-(baseNumberWidth/2);
+			int labelStart = ((baseWidth/2)+xLeftOffset+(baseWidth*i))-(baseNumberWidth/2);
 			
 			if (labelStart > lastXLabelEnd) {
 				g.drawString(xLabels[i], labelStart, getHeight()-25);
@@ -154,8 +191,8 @@ public class QualityBoxPlot extends JPanel {
 		}
 		
 		// Now draw the axes
-		g.drawLine(xOffset, getHeight()-40, getWidth()-10,getHeight()-40);
-		g.drawLine(xOffset, getHeight()-40, xOffset, 40);
+		g.drawLine(xLeftOffset, getHeight()-40, xLeftOffset + baseWidth*means.length, getHeight()-40);
+		g.drawLine(xLeftOffset, getHeight()-40, xLeftOffset, 40);
 		g.drawString("Position in read (bp)", (getWidth()/2) - (g.getFontMetrics().stringWidth("Position in read (bp)")/2), getHeight()-5);
 		
 		// Now draw the boxplots
@@ -172,32 +209,58 @@ public class QualityBoxPlot extends JPanel {
 //			System.out.println("For base "+i+" Yvalues are BoxBottom="+boxBottomY+" boxTop="+boxTopY+" whiskerBottom="+lowerWhiskerY+" whiskerTop="+upperWhiskerY+" median="+medianY);
 			
 			// Draw the main box
-			g.setColor(new Color(240,240,0));
-			g.fillRect(xOffset+(baseWidth*i)+2, boxTopY, baseWidth-4, boxBottomY-boxTopY);
+			g.setColor(new Color(240,240,0)); // yellowish
+			g.fillRect(xLeftOffset+(baseWidth*i)+2, boxTopY, baseWidth-4, boxBottomY-boxTopY);
 			g.setColor(Color.BLACK);
-			g.drawRect(xOffset+(baseWidth*i)+2, boxTopY, baseWidth-4, boxBottomY-boxTopY);
+			g.drawRect(xLeftOffset+(baseWidth*i)+2, boxTopY, baseWidth-4, boxBottomY-boxTopY);
 			
-			// Draw the upper whisker
-			g.drawLine(xOffset+(baseWidth*i)+(baseWidth/2), upperWhiskerY, xOffset+(baseWidth*i)+(baseWidth/2), boxTopY);
-			g.drawLine(xOffset+(baseWidth*i)+2, upperWhiskerY, xOffset+(baseWidth*(i+1))-2, upperWhiskerY);
+			// Draw the upper whisker - highest quantiles
+			g.drawLine(xLeftOffset+(baseWidth*i)+(baseWidth/2), upperWhiskerY, xLeftOffset+(baseWidth*i)+(baseWidth/2), boxTopY);
+			g.drawLine(xLeftOffset+(baseWidth*i)+2, upperWhiskerY, xLeftOffset+(baseWidth*(i+1))-2, upperWhiskerY);
 			
-			// Draw the lower whisker
-			g.drawLine(xOffset+(baseWidth*i)+(baseWidth/2), lowerWhiskerY, xOffset+(baseWidth*i)+(baseWidth/2), boxBottomY);
-			g.drawLine(xOffset+(baseWidth*i)+2, lowerWhiskerY, xOffset+(baseWidth*(i+1))-2, lowerWhiskerY);
+			// Draw the lower whisker - lowest quantiles
+			g.drawLine(xLeftOffset+(baseWidth*i)+(baseWidth/2), lowerWhiskerY, xLeftOffset+(baseWidth*i)+(baseWidth/2), boxBottomY);
+			g.drawLine(xLeftOffset+(baseWidth*i)+2, lowerWhiskerY, xLeftOffset+(baseWidth*(i+1))-2, lowerWhiskerY);
 
 			// Draw the median line
 			g.setColor(new Color(200,0,0));
-			g.drawLine(xOffset+(baseWidth*i)+2, medianY, (xOffset+(baseWidth*(i+1)))-2,medianY);
+			g.drawLine(xLeftOffset+(baseWidth*i)+2, medianY, (xLeftOffset+(baseWidth*(i+1)))-2,medianY);
 
-			
 		}
 
 		// Now overlay the means
-		g.setColor(new Color(0,0,200));
+		g.setColor(new Color(0,0,200)); // blueish
 		lastY = getY(means[0]);
 		for (int i=1;i<means.length;i++) {
 			int thisY = getY(means[i]);
-			g.drawLine((baseWidth/2)+xOffset+(baseWidth*(i-1)), lastY, (baseWidth/2)+xOffset+(baseWidth*i), thisY);
+			g.drawLine((baseWidth/2)+xLeftOffset+(baseWidth*(i-1)), lastY, (baseWidth/2)+xLeftOffset+(baseWidth*i), thisY);
+			lastY = thisY;
+		}
+
+		// Now overlay the mins // green 1
+		g.setColor(new Color(255,10,255));
+		lastY = getY(mins[0]);
+		for (int i=1;i<mins.length;i++) {
+			int thisY = getY(mins[i]);
+			g.drawLine((baseWidth/2)+xLeftOffset+(baseWidth*(i-1)), lastY, (baseWidth/2)+xLeftOffset+(baseWidth*i), thisY);
+			lastY = thisY;
+		}
+
+		// Now overlay the maxs // green 2
+		g.setColor(new Color(255,50,255));
+		lastY = getY(maxs[0]);
+		for (int i=1;i<maxs.length;i++) {
+			int thisY = getY(maxs[i]);
+			g.drawLine((baseWidth/2)+xLeftOffset+(baseWidth*(i-1)), lastY, (baseWidth/2)+xLeftOffset+(baseWidth*i), thisY);
+			lastY = thisY;
+		}
+
+		// Now overlay the number of bp per position // red
+		g.setColor(new Color(250,50,50));
+		lastY = getY(numbps[0]);
+		for (int i=1;i<numbps.length;i++) {
+			int thisY = getY(numbps[i]);
+			g.drawLine((baseWidth/2)+xLeftOffset+(baseWidth*(i-1)), lastY, (baseWidth/2)+xLeftOffset+(baseWidth*i), thisY);
 			lastY = thisY;
 		}
 		

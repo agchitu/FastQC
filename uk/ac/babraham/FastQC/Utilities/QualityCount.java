@@ -73,7 +73,7 @@ public class QualityCount {
 		return ((double)total)/count;
 	}
 	
-	public double getPercentile (int offset, int percentile) {
+	public double getPercentile (int offset, double percentile) {
 
 		long total = totalCounts;
 		
