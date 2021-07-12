@@ -90,12 +90,10 @@ public class FastQCConfig {
 			kmer_size = Integer.parseInt(System.getProperty("fastqc.kmer_size"));
 		}
 
-		
 		// Min length
 		if (System.getProperty("fastqc.min_length") != null) {
 			minLength = Integer.parseInt(System.getProperty("fastqc.min_length"));
 		}
-
 		
 		// Quiet
 		if (System.getProperty("fastqc.quiet") != null && System.getProperty("fastqc.quiet").equals("true")) {
@@ -116,7 +114,6 @@ public class FastQCConfig {
 		if (System.getProperty("fastqc.nofilter") != null && System.getProperty("fastqc.nofilter").equals("true")) {
 			nofilter = true;
 		}
-
 		
 		// No group
 		if (System.getProperty("fastqc.nogroup") != null && System.getProperty("fastqc.nogroup").equals("true")) {
@@ -156,6 +153,4 @@ public class FastQCConfig {
 	public static FastQCConfig getInstance() {
 		return instance;
 	}
-
-
 }

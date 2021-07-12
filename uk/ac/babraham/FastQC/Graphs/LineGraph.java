@@ -78,9 +78,6 @@ public class LineGraph extends JPanel {
 			base *=10;
 			
 		}
-		
-		
-		
 	}
 	
 	public Dimension getPreferredSize () {
@@ -223,10 +220,6 @@ public class LineGraph extends JPanel {
 			g.setColor(COLOURS[t % COLOURS.length]);
 			g.drawString(xTitles[t], ((getWidth()-10)-widestLabel)+3, 40+(20*(t+1)));
 		}
-		
-
-		
-		
 	}
 
 	private int getY(double y) {
