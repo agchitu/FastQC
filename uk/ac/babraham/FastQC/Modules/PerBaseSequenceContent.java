@@ -44,7 +44,7 @@ public class PerBaseSequenceContent extends AbstractQCModule {
 		
 		if (!calculated) getPercentages();
 
-		return new LineGraph(percentages, 0d, 100d, "Position in read (bp)", new String [] {"%T","%C","%A","%G"}, xCategories, "Sequence content across all bases");
+		return new LineGraph(percentages, 0d, 100d, "Position in read (bp)", new String [] {"%T","%C","%A","%G", "KLE"}, xCategories, "Sequence content across all bases");
 	}
 	
 	public boolean ignoreFilteredSequences() {
@@ -69,6 +69,8 @@ public class PerBaseSequenceContent extends AbstractQCModule {
 		double [] aPercent = new double[groups.length];
 		double [] tPercent = new double[groups.length];
 		double [] cPercent = new double[groups.length];
+
+		double [] ePercent = new double[groups.length];
 
 		long total;
 		long gCount;
@@ -98,16 +100,20 @@ public class PerBaseSequenceContent extends AbstractQCModule {
 				cCount += cCounts[bp];
 				gCount += gCounts[bp];				
 			}
-			
+
 			gPercent[i] = (gCount/(double)total)*100;
 			aPercent[i] = (aCount/(double)total)*100;
 			tPercent[i] = (tCount/(double)total)*100;
-			cPercent[i] = (cCount/(double)total)*100;			
-						
+			cPercent[i] = (cCount/(double)total)*100;
+
+			ePercent[i] = (aPercent[i]/100*((aPercent[i]<=0)?0:Math.log(aPercent[i]/100.0)) + 
+							tPercent[i]/100*((tPercent[i]<=0)?0:Math.log(tPercent[i]/100.0)) + 
+							cPercent[i]/100*((cPercent[i]<=0)?0:Math.log(cPercent[i]/100.0)) + 
+							gPercent[i]/100*((gPercent[i]<=0)?0:Math.log(gPercent[i]/100.0)))/Math.log(0.25)*100;
 		}
 		
-		percentages = new double [][] {tPercent,cPercent,aPercent,gPercent};
-		
+		percentages = new double [][] {tPercent, cPercent, aPercent, gPercent, ePercent};
+
 		calculated = true;
 	}
 	
