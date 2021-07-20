@@ -67,8 +67,13 @@ public class LineGraph extends JPanel implements  ActionListener {
 		for (int i=0; i<data.length; i++){
 			dataCBoxs[i] = new JCheckBox(xTitles[i]);
 			dataCBoxs[i].addActionListener(this);
+			dataCBoxs[i].setSelected(true);
 			this.add(dataCBoxs[i]);
 		}
+
+		// // get the selected item:
+		// String selectedBook = (String) bookList.getSelectedItem();
+		// System.out.println("You seleted the book: " + selectedBook);
 	}
 
     public void actionPerformed(ActionEvent e) {
@@ -225,12 +230,6 @@ public class LineGraph extends JPanel implements  ActionListener {
 		g.fillRect((getWidth()-40)-widestLabel, 55, widestLabel, 10+(20*xTitles.length));
 		g.setColor(Color.LIGHT_GRAY);
 		g.drawRect((getWidth()-40)-widestLabel, 55, widestLabel, 10+(20*xTitles.length));
-
-		// // Now draw the actual labels
-		// for (int t=0;t<xTitles.length;t++) {
-		// 	g.setColor(COLOURS[t % COLOURS.length]);
-		// 	g.drawString(xTitles[t], ((getWidth()-10)-widestLabel)+3, 40+(20*(t+1)));
-		// }
 
 		// Repaint the checkboxes
 		for (int i=0; i<data.length; i++){

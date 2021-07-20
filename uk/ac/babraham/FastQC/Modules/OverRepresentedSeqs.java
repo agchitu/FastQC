@@ -46,7 +46,6 @@ public class OverRepresentedSeqs extends AbstractQCModule {
 	protected HashMap<String, Integer>sequences = new HashMap<String, Integer>();
 	protected long count = 0;
 	private OverrepresentedSeq [] overrepresntedSeqs = null;
-	private boolean calculated = false;
 	private boolean frozen = false;
 	private DuplicationLevel duplicationModule;
 	
@@ -81,6 +80,15 @@ public class OverRepresentedSeqs extends AbstractQCModule {
 	
 	public DuplicationLevel duplicationLevelModule () {
 		return duplicationModule;
+	}
+
+	public boolean isCalculated()
+	{
+		return calculated;
+	}
+
+	public void setCalculated(boolean value){
+		calculated = value;
 	}
 
 	public JPanel getResultsPanel() {

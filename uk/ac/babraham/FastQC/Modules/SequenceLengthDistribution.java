@@ -35,8 +35,16 @@ public class SequenceLengthDistribution extends AbstractQCModule {
 	private double [] graphCounts = null;
 	private String [] xCategories = new String[0];
 	private double max = 0;
-	private boolean calculated = false;
-	
+
+	public boolean isCalculated()
+	{
+		return calculated;
+	}
+
+	public void setCalculated(boolean value){
+		calculated = value;
+	}
+
 	public JPanel getResultsPanel() {
 	
 		if (!calculated) calculateDistribution();

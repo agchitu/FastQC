@@ -59,8 +59,6 @@ public class KmerContent extends AbstractQCModule {
 	private static int MIN_KMER_SIZE = 7;
 	private static int MAX_KMER_SIZE = 7;
 	
-	public boolean calculated = false;
-	
 	// This is the full set of Kmers to be reported
 	private Kmer [] enrichedKmers = null;
 	
@@ -93,8 +91,17 @@ public class KmerContent extends AbstractQCModule {
 			return true;
 		}
 		return false;
+	}	
+
+	public boolean isCalculated()
+	{
+		return calculated;
 	}
-	
+
+	public void setCalculated(boolean value){
+		calculated = value;
+	}
+
 	public JPanel getResultsPanel() {
 		
 		if (!calculated) calculateEnrichment();

@@ -37,9 +37,16 @@ public class PerBaseSequenceContent extends AbstractQCModule {
 	public long [] tCounts = new long [0];
 	private double [][] percentages = null;
 	private String [] xCategories = new String[0];
-	private boolean calculated = false;
 		
-	
+	public boolean isCalculated()
+	{
+		return calculated;
+	}
+
+	public void setCalculated(boolean value){
+		calculated = value;
+	}
+
 	public JPanel getResultsPanel() {
 		
 		if (!calculated) getPercentages();

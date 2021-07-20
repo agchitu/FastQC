@@ -38,10 +38,18 @@ public class PerSequenceGCContent extends AbstractQCModule {
 	private int [] xCategories = new int[0];
 	private double max = 0;
 	private double deviationPercent;
-	private boolean calculated = false;
 	
 	private GCModel [] cachedModels = new GCModel [200];
 	
+	public boolean isCalculated()
+	{
+		return calculated;
+	}
+
+	public void setCalculated(boolean value){
+		calculated = value;
+	}
+
 	public JPanel getResultsPanel() {
 	
 		if (!calculated) calculateDistribution();
@@ -60,12 +68,10 @@ public class PerSequenceGCContent extends AbstractQCModule {
 		return false;
 	}
 	
-	
 	private synchronized void calculateDistribution () {
 		max = 0;
 		xCategories = new int[gcDistribution.length];
 		double totalCount = 0;
-		
 		
 		// We use the mode to calculate the theoretical distribution
 		// so that we cope better with skewed distributions.

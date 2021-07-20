@@ -37,6 +37,8 @@ import uk.ac.babraham.FastQC.Utilities.ImageToBase64;
 
 public abstract class AbstractQCModule implements QCModule {
 
+	public boolean calculated = false;
+
 	protected 	void simpleXhtmlReport(HTMLReportArchive report,BufferedImage img,String alt) throws XMLStreamException {
 		XMLStreamWriter xhtml = report.xhtmlStream();
 		xhtml.writeStartElement("p");
@@ -97,7 +99,6 @@ public abstract class AbstractQCModule implements QCModule {
 		simpleXhtmlReport(report, b, imageTitle);
 
 	}
-
 
 	protected void writeTable(HTMLReportArchive report, TableModel table) throws IOException,XMLStreamException {
 		writeXhtmlTable(report,table);

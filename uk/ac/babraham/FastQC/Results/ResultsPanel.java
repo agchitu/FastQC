@@ -29,16 +29,20 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 import uk.ac.babraham.FastQC.Analysis.AnalysisListener;
 import uk.ac.babraham.FastQC.Modules.QCModule;
+import uk.ac.babraham.FastQC.FastQCConfig;
 import uk.ac.babraham.FastQC.Sequence.SequenceFile;
 
-public class ResultsPanel extends JPanel implements ListSelectionListener, AnalysisListener{
+public class ResultsPanel extends JPanel implements ListSelectionListener, AnalysisListener, ActionListener{
 
 	private static final ImageIcon ERROR_ICON = new ImageIcon(ClassLoader.getSystemResource("uk/ac/babraham/FastQC/Resources/error.png"));
 	private static final ImageIcon WARNING_ICON = new ImageIcon(ClassLoader.getSystemResource("uk/ac/babraham/FastQC/Resources/warning.png"));
@@ -46,17 +50,25 @@ public class ResultsPanel extends JPanel implements ListSelectionListener, Analy
 
 	
 	private QCModule [] modules;
-	private JList moduleList;
+	private JList<QCModule> moduleList;
 	private JPanel [] panels;
 	private JPanel currentPanel = null;
 	private JLabel progressLabel;
 	private SequenceFile sequenceFile;
-	
+	private JComboBox<String> groupingComboBox;
+
 	public ResultsPanel (SequenceFile sequenceFile) {
 		this.sequenceFile = sequenceFile;
 		setLayout(new BorderLayout());
 		progressLabel = new JLabel("Waiting to start...",JLabel.CENTER);
 		add(progressLabel,BorderLayout.CENTER);
+
+		String[] choicesGrouping = new String[] {"None", "Linear", "Exponential"};
+		this.groupingComboBox = new JComboBox<String>(choicesGrouping);
+		groupingComboBox.setSelectedItem("Linear");
+		FastQCConfig.getInstance().nogroup = false;
+		groupingComboBox.addActionListener(this);
+		this.add(groupingComboBox, BorderLayout.BEFORE_FIRST_LINE);	
 	}
 
 	public void valueChanged(ListSelectionEvent e) {
@@ -70,6 +82,36 @@ public class ResultsPanel extends JPanel implements ListSelectionListener, Analy
 		}
 	}
 	
+    public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == groupingComboBox){
+			String sel = (String)this.groupingComboBox.getSelectedItem();
+			FastQCConfig.getInstance().nogroup = (sel=="None");
+			FastQCConfig.getInstance().expgroup = (sel=="Exponential");
+	
+			int index = moduleList.getSelectedIndex();
+			if (index >= 0) {
+				// Recalculate all modules
+				for (int m=0; m<modules.length; m++) {
+					modules[m].setCalculated(false);
+					panels[m] = modules[m].getResultsPanel();
+				}
+
+				remove(currentPanel);
+				currentPanel = panels[index]; 
+				add(currentPanel,BorderLayout.CENTER);
+				validate();
+				repaint();
+			}	
+		}
+
+				// // Repaint the combobox
+				// groupingComboBox.setBackground(Color.WHITE);
+				// groupingComboBox.setLocation(((getWidth()-40)-widestLabel)+3, 40+(20*(data.length+2)));
+				// groupingComboBox.repaint();
+
+		this.repaint();
+    }
+
 	public SequenceFile sequenceFile () {
 		return sequenceFile;
 	}
@@ -80,7 +122,7 @@ public class ResultsPanel extends JPanel implements ListSelectionListener, Analy
 	
 	private class ModuleRenderer extends DefaultListCellRenderer {
 
-		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			if (! (value instanceof QCModule)) {
 				return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			}
@@ -113,7 +155,7 @@ public class ResultsPanel extends JPanel implements ListSelectionListener, Analy
 
 		Vector<QCModule> modulesToDisplay = new Vector<QCModule>();
 		
-		for (int m=0;m<rawModules.length;m++) {
+		for (int m=0; m<rawModules.length; m++) {
 			if (!rawModules[m].ignoreInReport()) {
 				modulesToDisplay.add(rawModules[m]);
 			}
@@ -123,12 +165,12 @@ public class ResultsPanel extends JPanel implements ListSelectionListener, Analy
 		
 		panels = new JPanel[modules.length];
 		
-		for (int m=0;m<modules.length;m++) {
+		for (int m=0; m<modules.length; m++) {
 //			System.err.println("Getting panel for "+modules[m].name()+" with "+modules[m].description());
 			panels[m] = modules[m].getResultsPanel();
 		}
 		
-		moduleList = new JList(modules);
+		moduleList = new JList<QCModule>(modules);
 		moduleList.setCellRenderer(new ModuleRenderer());
 		moduleList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		moduleList.setSelectedIndex(0);
@@ -139,7 +181,6 @@ public class ResultsPanel extends JPanel implements ListSelectionListener, Analy
 		currentPanel = panels[0];
 		add(currentPanel,BorderLayout.CENTER);
 		validate();
-		
 	}
 
 	public void analysisUpdated(SequenceFile file, int sequencesProcessed, int percentComplete) {
@@ -158,6 +199,4 @@ public class ResultsPanel extends JPanel implements ListSelectionListener, Analy
 	public void analysisStarted(SequenceFile file) {
 		progressLabel.setText("Starting analysis...");		
 	}
-	
-	
 }

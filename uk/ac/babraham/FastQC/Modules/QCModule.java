@@ -39,13 +39,17 @@ public interface QCModule {
 	public String description ();
 	
 	public void reset ();
+
+	public boolean isCalculated();
+
+	public void setCalculated(boolean value);
 	
 	public boolean raisesError();
 	
 	public boolean raisesWarning();
 	
 	public boolean ignoreFilteredSequences();
-	
+
 	/**
 	 * Allows you to say that this module shouldn't be included in the final report.
 	 * Useful for modules which have a use under some circumstances but not others.
@@ -54,6 +58,4 @@ public interface QCModule {
 	public boolean ignoreInReport();
 
 	public void makeReport(HTMLReportArchive report) throws XMLStreamException,IOException;
-	
-	
 }

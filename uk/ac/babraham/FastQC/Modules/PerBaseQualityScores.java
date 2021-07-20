@@ -51,8 +51,16 @@ public class PerBaseQualityScores extends AbstractQCModule {
 	int low = 0;
 	int high = 0;
 	PhredEncoding encodingScheme;
-	private boolean calculated = false;
-		
+
+	public boolean isCalculated()
+	{
+		return calculated;
+	}
+
+	public void setCalculated(boolean value){
+		calculated = value;
+	}
+
 	public JPanel getResultsPanel() {
 		
 		if (!calculated) getPercentages();

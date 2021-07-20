@@ -129,7 +129,7 @@ public class BaseGroup {
 		// us a total set of groups below 75.  We limit the intervals
 		// we try to sensible whole numbers.
 		
-		int [] baseValues = new int [] {2,5,10};
+		int [] baseValues = new int [] {2,5,10,20};
 		int multiplier = 1;
 		
 		while (true) {
@@ -160,7 +160,6 @@ public class BaseGroup {
 		// We need to work out what interval we're going to use.
 		
 		int interval = getLinearInterval(maxLength);
-		
 		
 		int startingBase = 1;
 

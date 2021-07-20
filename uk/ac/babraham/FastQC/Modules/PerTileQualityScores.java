@@ -44,7 +44,6 @@ public class PerTileQualityScores extends AbstractQCModule {
 	private int [] tiles;
 	private int high = 0;
 	PhredEncoding encodingScheme;
-	private boolean calculated = false;
 	
 	private long totalCount = 0;
 	
@@ -53,6 +52,15 @@ public class PerTileQualityScores extends AbstractQCModule {
 	private double maxDeviation = 0;
 
 	private boolean ignoreInReport = false;
+
+	public boolean isCalculated()
+	{
+		return calculated;
+	}
+
+	public void setCalculated(boolean value){
+		calculated = value;
+	}
 
 	public JPanel getResultsPanel() {
 

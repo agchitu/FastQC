@@ -49,8 +49,6 @@ public class AdapterContent extends AbstractQCModule {
 
 	private long totalCount = 0;
 
-	public boolean calculated = false;
-
 	// This is the full set of Kmers to be reported
 	private Adapter [] adapters;
 
@@ -77,7 +75,6 @@ public class AdapterContent extends AbstractQCModule {
 			else {
 				br=new BufferedReader(new FileReader(FastQCConfig.getInstance().adapter_file));
 			}
-
 
 			String line;
 			while ((line = br.readLine())!= null){
@@ -116,6 +113,15 @@ public class AdapterContent extends AbstractQCModule {
 			return true;
 		}
 		return false;
+	}
+
+	public boolean isCalculated()
+	{
+		return calculated;
+	}
+
+	public void setCalculated(boolean value){
+		calculated = value;
 	}
 
 	public JPanel getResultsPanel() {

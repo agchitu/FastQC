@@ -200,9 +200,16 @@ public class DuplicationLevel extends AbstractQCModule {
 		double trueCount = numberOfObservations/pSeeingAtLimit;
 		
 		return trueCount;
-		
 	}
 	
+	public boolean isCalculated()
+	{
+		return calculated;
+	}
+
+	public void setCalculated(boolean value){
+		calculated = value;
+	}
 
 	public JPanel getResultsPanel() {
 		if (deduplicatedPercentages == null) calculateLevels();

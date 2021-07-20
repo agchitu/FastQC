@@ -167,7 +167,6 @@ public class FastQCApplication extends JFrame {
 			
 		}
 		
-		
 		File [][] fileGroups;
 		
 		// See if we need to group together files from a casava group
@@ -184,7 +183,6 @@ public class FastQCApplication extends JFrame {
 			}
 		}
 
-	
 		for (int i=0;i<fileGroups.length;i++) {
 			File [] filesToProcess = fileGroups[i];
 			lastUsedDir = filesToProcess[0].getParentFile();
@@ -213,7 +211,6 @@ public class FastQCApplication extends JFrame {
 			ResultsPanel rp = new ResultsPanel(sequenceFile);
 			runner.addAnalysisListener(rp);
 			fileTabs.addTab(sequenceFile.name(), rp);
-			
 
 			QCModule [] module_list = ModuleFactory.getStandardModuleList();
 	

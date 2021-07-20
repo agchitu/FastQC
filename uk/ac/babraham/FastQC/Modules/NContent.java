@@ -33,10 +33,18 @@ public class NContent extends AbstractQCModule {
 
 	public long [] nCounts = new long [0];
 	public long [] notNCounts = new long [0];
-	public boolean calculated = false;
 	public double [] percentages = null;
 	public String [] xCategories = new String[0];
 	
+	public boolean isCalculated()
+	{
+		return calculated;
+	}
+
+	public void setCalculated(boolean value){
+		calculated = value;
+	}
+
 	public JPanel getResultsPanel() {
 		
 		if (!calculated) getPercentages();

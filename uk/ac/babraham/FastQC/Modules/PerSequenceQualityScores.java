@@ -39,8 +39,16 @@ public class PerSequenceQualityScores extends AbstractQCModule {
 	private char lowestChar = 126;
 	private int maxCount = 0;
 	private int mostFrequentScore;
-	private boolean calculated = false;
-	
+
+	public boolean isCalculated()
+	{
+		return calculated;
+	}
+
+	public void setCalculated(boolean value){
+		calculated = value;
+	}
+
 	public JPanel getResultsPanel() {
 	
 		if (!calculated) calculateDistribution();

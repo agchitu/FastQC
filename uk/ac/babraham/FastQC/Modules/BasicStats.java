@@ -81,6 +81,15 @@ public class BasicStats extends AbstractQCModule {
 		nCount = 0;
 	}
 
+	public boolean isCalculated()
+	{
+		return calculated;
+	}
+
+	public void setCalculated(boolean value){
+		calculated = value;
+	}
+
 	public String name() {
 		return "Basic Statistics";
 	}
