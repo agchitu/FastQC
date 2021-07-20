@@ -44,7 +44,7 @@ public class PerBaseSequenceContent extends AbstractQCModule {
 		
 		if (!calculated) getPercentages();
 
-		return new LineGraph(percentages, 0d, 100d, "Position in read (bp)", new String [] {"%T","%C","%A","%G", "KLE"}, xCategories, "Sequence content across all bases");
+		return new LineGraph(percentages, 0d, 100d, "Position in read (bp)", new String [] {"%T","%C","%A","%G", "Entropy", "EntropyRA"}, xCategories, "Sequence content across all bases");
 	}
 	
 	public boolean ignoreFilteredSequences() {
@@ -71,6 +71,7 @@ public class PerBaseSequenceContent extends AbstractQCModule {
 		double [] cPercent = new double[groups.length];
 
 		double [] ePercent = new double[groups.length];
+		double [] eraPercent = new double[groups.length];
 
 		long total;
 		long gCount;
@@ -109,10 +110,22 @@ public class PerBaseSequenceContent extends AbstractQCModule {
 			ePercent[i] = (aPercent[i]/100*((aPercent[i]<=0)?0:Math.log(aPercent[i]/100.0)) + 
 							tPercent[i]/100*((tPercent[i]<=0)?0:Math.log(tPercent[i]/100.0)) + 
 							cPercent[i]/100*((cPercent[i]<=0)?0:Math.log(cPercent[i]/100.0)) + 
-							gPercent[i]/100*((gPercent[i]<=0)?0:Math.log(gPercent[i]/100.0)))/Math.log(0.25)*100;
+							gPercent[i]/100*((gPercent[i]<=0)?0:Math.log(gPercent[i]/100.0)))/Math.log(0.25)*100;			
+		}
+
+		// Calculate rolling average = 10
+		int ws = 20;
+		for  (int i=0;i<groups.length;i++) {
+			double tv = 0;
+			int tc = 0;
+			for (int j=Math.max(i-ws/2, 0); j<Math.min(i+ws/2, groups.length); j++){
+				tc += 1;
+				tv += ePercent[j];
+			}
+			eraPercent[i] = tv/tc;
 		}
 		
-		percentages = new double [][] {tPercent, cPercent, aPercent, gPercent, ePercent};
+		percentages = new double [][] {tPercent, cPercent, aPercent, gPercent, ePercent, eraPercent};
 
 		calculated = true;
 	}

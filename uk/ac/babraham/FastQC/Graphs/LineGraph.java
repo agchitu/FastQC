@@ -27,13 +27,17 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 
 import javax.swing.JPanel;
+import javax.swing.JCheckBox;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
-public class LineGraph extends JPanel {
+public class LineGraph extends JPanel implements  ActionListener {
 
 	private String [] xTitles;
 	private String xLabel;
 	private String [] xCategories;
 	private double [][] data;
+	private JCheckBox [] dataCBoxs;
 	private String graphTitle;
 	private double minY;
 	private double maxY;
@@ -42,12 +46,11 @@ public class LineGraph extends JPanel {
 	private static final Color [] COLOURS = new Color[] {new Color(220,0,0), new Color(0,0,220), new Color(0,220,0), Color.DARK_GRAY, Color.MAGENTA, Color.ORANGE,Color.YELLOW,Color.CYAN,Color.PINK,Color.LIGHT_GRAY};
 	
 	public LineGraph (double [] [] data, double minY, double maxY, String xLabel, String [] xTitles, int [] xCategories, String graphTitle) {
-		this(data,minY,maxY,xLabel,xTitles,new String[0],graphTitle);
+		this(data, minY, maxY, xLabel, xTitles, new String[0], graphTitle);
 		this.xCategories = new String [xCategories.length];
 		for (int i=0;i<xCategories.length;i++) {
 			this.xCategories[i] = ""+xCategories[i];
 		}
-		
 	}
 	
 	public LineGraph (double [] [] data, double minY, double maxY, String xLabel, String [] xTitles, String [] xCategories, String graphTitle) {
@@ -59,7 +62,18 @@ public class LineGraph extends JPanel {
 		this.xCategories = xCategories;
 		this.graphTitle = graphTitle;
 		this.yInterval = findOptimalYInterval(maxY);
+
+		this.dataCBoxs = new JCheckBox[data.length];
+		for (int i=0; i<data.length; i++){
+			dataCBoxs[i] = new JCheckBox(xTitles[i]);
+			dataCBoxs[i].addActionListener(this);
+			this.add(dataCBoxs[i]);
+		}
 	}
+
+    public void actionPerformed(ActionEvent e) {
+		this.repaint();
+    }
 	
 	private double findOptimalYInterval(double max) {
 		
@@ -126,14 +140,12 @@ public class LineGraph extends JPanel {
 		int titleWidth = g.getFontMetrics().stringWidth(graphTitle);
 		g.drawString(graphTitle, (xOffset + ((getWidth()-(xOffset+10))/2)) - (titleWidth/2), 30);
 		
-		
 		// Now draw the axes
 		g.drawLine(xOffset, getHeight()-40, getWidth()-10,getHeight()-40);
 		g.drawLine(xOffset, getHeight()-40, xOffset, 40);
 		
 		// Draw the xLabel under the xAxis
 		g.drawString(xLabel, (getWidth()/2) - (g.getFontMetrics().stringWidth(xLabel)/2), getHeight()-5);
-		
 		
 		// Now draw the data points
 		int baseWidth = (getWidth()-(xOffset+10))/Math.max(data[0].length,1); // Math.max is there in case we have no data (no sequences)
@@ -142,7 +154,6 @@ public class LineGraph extends JPanel {
 //		System.out.println("Base Width is "+baseWidth);
 		
 		// First draw faint boxes over alternating bases so you can see which is which
-		
 		// Let's find the longest label, and then work out how often we can draw labels
 		
 		int lastXLabelEnd = 0;
@@ -179,16 +190,17 @@ public class LineGraph extends JPanel {
 		}
 		
 		for (int d=0;d<data.length;d++) {
-			g.setColor(COLOURS[d % COLOURS.length]);
-			
-			if (data[d].length > 0)
-				lastY = getY(data[d][0]);
-			for (int i=1;i<data[d].length;i++) {
-				int thisY = getY(data[d][i]);
-				g.drawLine((baseWidth/2)+xOffset+(baseWidth*(i-1)), lastY, (baseWidth/2)+xOffset+(baseWidth*i), thisY);
-				lastY = thisY;
+			if (dataCBoxs[d].isSelected()){
+				g.setColor(COLOURS[d % COLOURS.length]);
+				
+				if (data[d].length > 0)
+					lastY = getY(data[d][0]);
+				for (int i=1;i<data[d].length;i++) {
+					int thisY = getY(data[d][i]);
+					g.drawLine((baseWidth/2)+xOffset+(baseWidth*(i-1)), lastY, (baseWidth/2)+xOffset+(baseWidth*i), thisY);
+					lastY = thisY;
+				}
 			}
-			
 		}
 		
 		// Now draw the data legend
@@ -197,7 +209,6 @@ public class LineGraph extends JPanel {
 			((Graphics2D)g).setStroke(new BasicStroke(1));
 			((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 		}
-
 		
 		// First we need to find the widest label
 		int widestLabel = 0;
@@ -207,18 +218,26 @@ public class LineGraph extends JPanel {
 		}
 		
 		// Add 3px either side for a bit of space;
-		widestLabel += 6;
+		widestLabel += 30;
 		
 		// First draw a box to put the legend in
 		g.setColor(Color.WHITE);
-		g.fillRect((getWidth()-10)-widestLabel, 40, widestLabel, 3+(20*xTitles.length));
+		g.fillRect((getWidth()-40)-widestLabel, 55, widestLabel, 10+(20*xTitles.length));
 		g.setColor(Color.LIGHT_GRAY);
-		g.drawRect((getWidth()-10)-widestLabel, 40, widestLabel, 3+(20*xTitles.length));
+		g.drawRect((getWidth()-40)-widestLabel, 55, widestLabel, 10+(20*xTitles.length));
 
-		// Now draw the actual labels
-		for (int t=0;t<xTitles.length;t++) {
-			g.setColor(COLOURS[t % COLOURS.length]);
-			g.drawString(xTitles[t], ((getWidth()-10)-widestLabel)+3, 40+(20*(t+1)));
+		// // Now draw the actual labels
+		// for (int t=0;t<xTitles.length;t++) {
+		// 	g.setColor(COLOURS[t % COLOURS.length]);
+		// 	g.drawString(xTitles[t], ((getWidth()-10)-widestLabel)+3, 40+(20*(t+1)));
+		// }
+
+		// Repaint the checkboxes
+		for (int i=0; i<data.length; i++){
+			dataCBoxs[i].setBackground(Color.WHITE);
+			dataCBoxs[i].setForeground(COLOURS[i % COLOURS.length]);
+			dataCBoxs[i].setLocation(((getWidth()-40)-widestLabel)+3, 40+(20*(i+1)));
+			dataCBoxs[i].repaint();
 		}
 	}
 
